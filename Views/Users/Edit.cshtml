@@ -1,0 +1,67 @@
+@model ADSimulator.Models.CreateUserViewModel
+@{ ViewData["Title"] = "Edit User"; }
+
+<div class="panel-hdr">
+    <div class="panel-hdr-title"><span class="phi">✏️</span> Edit User: @Model.Username</div>
+</div>
+<div style="padding:16px; overflow-y:auto;">
+<div class="win-form" style="max-width:560px;">
+    <div class="win-form-title">✏️ User Properties — @Model.Username</div>
+    <div class="win-form-body">
+        <form method="post" asp-action="Edit" asp-route-id="@Model.Id">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input value="@Model.Username" class="form-control" disabled style="background:#f0f0f0; color:#666;" />
+                <span style="font-size:11px; color:#888;">Username cannot be changed after creation</span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name <span>*</span></label>
+                    <input name="FullName" value="@Model.FullName" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email <span>*</span></label>
+                    <input name="Email" type="email" value="@Model.Email" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Organizational Unit <span>*</span></label>
+                <select name="OUId" class="form-control">
+                    @foreach (var ou in Model.OUs)
+                    {
+                        <option value="@ou.Id" @(Model.OUId == ou.Id ? "selected" : "")>🗂️ @ou.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">New Password <span style="color:#888; font-weight:400; font-size:10px;">(blank = no change)</span></label>
+                    <input name="Password" type="password" class="form-control" placeholder="Leave blank to keep current" autocomplete="new-password" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input name="ConfirmPassword" type="password" class="form-control" placeholder="Confirm if changing" autocomplete="new-password" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input name="IsEnabled" type="checkbox" @(Model.IsEnabled ? "checked" : "") value="true" />
+                    <label class="form-label" style="margin-bottom:0;">Account is Enabled</label>
+                </div>
+                <input name="IsEnabled" type="hidden" value="false" />
+            </div>
+
+            <div style="display:flex; gap:6px; margin-top:14px; padding-top:10px; border-top:1px solid #e0e0e0;">
+                <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                <a href="/Users/Details/@Model.Id" class="btn btn-default">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</div>

@@ -1,0 +1,99 @@
+@model ADSimulator.Models.DashboardViewModel
+@{ ViewData["Title"] = "Dashboard"; }
+
+<div class="stats-grid">
+    <div class="stat-box"><div class="stat-ico">🗂️</div><div><div class="stat-lbl">Org. Units</div><div class="stat-val">@Model.TotalOUs</div></div></div>
+    <div class="stat-box"><div class="stat-ico">👥</div><div><div class="stat-lbl">Total Users</div><div class="stat-val">@Model.TotalUsers</div></div></div>
+    <div class="stat-box"><div class="stat-ico">✅</div><div><div class="stat-lbl">Active</div><div class="stat-val" style="color:#107c10">@Model.ActiveUsers</div></div></div>
+    <div class="stat-box"><div class="stat-ico">🔒</div><div><div class="stat-lbl">Locked Out</div><div class="stat-val" style="color:#d13438">@Model.LockedUsers</div></div></div>
+    <div class="stat-box"><div class="stat-ico">🚫</div><div><div class="stat-lbl">Disabled</div><div class="stat-val" style="color:#ca5010">@Model.DisabledUsers</div></div></div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+
+<div class="win-panel">
+    <div class="win-panel-head">
+        <span class="win-panel-title">🗂️ Organizational Units</span>
+        <a href="/OU/Create" class="btn btn-primary btn-sm">+ New OU</a>
+    </div>
+    <div class="win-panel-body">
+        @if (!Model.OUs.Any())
+        {
+            <div class="empty-state"><div class="empty-ico">🗂️</div><div>No OUs yet</div></div>
+        }
+        else
+        {
+            <table class="win-table">
+                <thead><tr><th>Name</th><th>Description</th><th>Users</th></tr></thead>
+                <tbody>
+                @foreach (var ou in Model.OUs)
+                {
+                    <tr>
+                        <td><a href="/OU/Details/@ou.Id" style="color:var(--blue);text-decoration:none;">🗂️ @ou.Name</a></td>
+                        <td class="text-muted">@(string.IsNullOrEmpty(ou.Description) ? "—" : ou.Description)</td>
+                        <td><span class="badge badge-ou">@ou.Users.Count</span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<div class="win-panel">
+    <div class="win-panel-head">
+        <span class="win-panel-title">📋 Domain Policy</span>
+    </div>
+    <div class="win-panel-body pad">
+        <table class="win-table">
+            <thead><tr><th>Policy</th><th>Setting</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>🔑 Minimum Password Length</td><td>6 Characters</td><td><span class="badge badge-ok">Enforced</span></td></tr>
+                <tr><td>🔒 Account Lockout Threshold</td><td>3 Failed Attempts</td><td><span class="badge badge-ok">Enforced</span></td></tr>
+                <tr><td>💾 Password Storage</td><td>SHA-256 Hash</td><td><span class="badge badge-ok">Secure</span></td></tr>
+                <tr><td>🌐 Domain Mode</td><td>Offline / Local</td><td><span class="badge badge-ou">Active</span></td></tr>
+            </tbody>
+        </table>
+        <div style="margin-top:10px;">
+            <a href="/Auth/LoginSimulator" class="btn btn-primary">🔐 Open Login Simulator</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<div class="win-panel" style="margin-top:10px;">
+    <div class="win-panel-head">
+        <span class="win-panel-title">👥 Recent Users</span>
+        <a href="/Users/Create" class="btn btn-primary btn-sm">+ New User</a>
+    </div>
+    <div class="win-panel-body">
+        @if (!Model.RecentUsers.Any())
+        {
+            <div class="empty-state"><div class="empty-ico">👤</div><div>No users yet</div></div>
+        }
+        else
+        {
+            <table class="win-table">
+                <thead><tr><th>Username</th><th>Full Name</th><th>Email</th><th>OU</th><th>Status</th><th>Last Login</th></tr></thead>
+                <tbody>
+                @foreach (var u in Model.RecentUsers)
+                {
+                    <tr>
+                        <td><a href="/Users/Details/@u.Id" style="color:var(--blue);text-decoration:none;">👤 @u.Username</a></td>
+                        <td>@u.FullName</td>
+                        <td class="text-muted">@u.Email</td>
+                        <td><span class="badge badge-ou">@u.OU?.Name</span></td>
+                        <td>
+                            @if (u.IsLocked) { <span class="badge badge-lock">🔒 Locked</span> }
+                            else if (!u.IsEnabled) { <span class="badge badge-dis">🚫 Disabled</span> }
+                            else { <span class="badge badge-ok">✅ Active</span> }
+                        </td>
+                        <td class="text-muted">@(u.LastLogin.HasValue ? u.LastLogin.Value.ToString("MMM dd HH:mm") : "Never")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

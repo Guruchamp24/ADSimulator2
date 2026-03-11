@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Active Directory Users and Computers</title>
+    <style>
+        :root {
+            --blue: #0078d4; --blue-dark: #005a9e; --blue-light: #deecf9;
+            --bg: #f3f3f3; --panel: #ffffff; --border: #d1d1d1; --border-dk: #a0a0a0;
+            --text: #1b1b1b; --muted: #605e5c; --header: #323130;
+            --hover: #edebe9; --selected: #cce4f7;
+            --toolbar: #f8f8f8; --red: #d13438; --green: #107c10; --orange: #ca5010;
+            --sidebar: 240px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Title Bar */
+        .titlebar { height: 30px; background: #1e1e1e; display: flex; align-items: center; padding: 0 10px; gap: 8px; flex-shrink: 0; }
+        .titlebar-icon { font-size: 14px; }
+        .titlebar-text { color: #cccccc; font-size: 11px; flex: 1; }
+        .titlebar-btns { display: flex; }
+        .tb-wbtn { width: 44px; height: 30px; display: flex; align-items: center; justify-content: center; color: #ccc; cursor: pointer; font-size: 10px; }
+        .tb-wbtn:hover { background: rgba(255,255,255,0.1); }
+        .tb-wbtn.cls:hover { background: #e81123; color: #fff; }
+
+        /* Menu Bar */
+        .menubar { height: 22px; background: var(--toolbar); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 2px; flex-shrink: 0; }
+        .mnu { padding: 2px 8px; font-size: 12px; cursor: pointer; border-radius: 2px; }
+        .mnu:hover { background: var(--hover); }
+
+        /* Toolbar */
+        .toolbar { height: 34px; background: var(--toolbar); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 4px; gap: 1px; flex-shrink: 0; }
+        .tbtn { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; font-size: 12px; color: var(--text); cursor: pointer; border-radius: 2px; border: 1px solid transparent; background: transparent; text-decoration: none; white-space: nowrap; }
+        .tbtn:hover { background: var(--hover); border-color: var(--border); }
+        .tbtn.act { background: var(--selected); border-color: var(--blue); }
+        .tbtn-sep { width: 1px; height: 18px; background: var(--border-dk); margin: 0 2px; }
+
+        /* Address Bar */
+        .addrbar { height: 26px; background: var(--toolbar); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 6px; gap: 6px; flex-shrink: 0; }
+        .addrbar-lbl { font-size: 11px; color: var(--muted); white-space: nowrap; }
+        .addrbar-path { flex: 1; height: 18px; padding: 0 6px; font-size: 11px; border: 1px solid var(--border); background: #fff; color: var(--text); border-radius: 1px; }
+
+        /* Layout */
+        .app-body { display: flex; flex: 1; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar { width: var(--sidebar); background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+        .sb-head { padding: 5px 8px; background: var(--toolbar); border-bottom: 1px solid var(--border); font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .tree { overflow-y: auto; flex: 1; padding: 2px 0; }
+        .tree-sec { padding: 8px 8px 2px; font-size: 10px; font-weight: 700; color: #a19f9d; text-transform: uppercase; letter-spacing: 0.8px; }
+        .titem { display: flex; align-items: center; gap: 4px; padding: 3px 8px; cursor: pointer; color: var(--text); text-decoration: none; font-size: 12px; user-select: none; border-left: 2px solid transparent; }
+        .titem:hover { background: var(--hover); }
+        .titem.active { background: var(--selected); border-left-color: var(--blue); color: var(--blue-dark); font-weight: 600; }
+        .titem .ti { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+        .titem-sub { padding-left: 24px; }
+
+        /* Content */
+        .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .content-inner { flex: 1; overflow-y: auto; padding: 12px; }
+
+        /* Status Bar */
+        .statusbar { height: 20px; background: var(--blue); display: flex; align-items: center; padding: 0 8px; gap: 16px; flex-shrink: 0; }
+        .sb-item { color: rgba(255,255,255,0.9); font-size: 11px; display: flex; align-items: center; gap: 4px; }
+
+        /* Notifications */
+        .notif { display: flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 2px; font-size: 12px; margin-bottom: 6px; border: 1px solid; }
+        .notif-ok { background: #dff6dd; border-color: #107c10; color: #0b5a0b; }
+        .notif-err { background: #fde7e9; border-color: #d13438; color: #8b0000; }
+        .notif-warn { background: #fff4ce; border-color: #ca5010; color: #6a2e00; }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 12px; }
+        .stat-box { background: var(--panel); padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+        .stat-ico { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; flex-shrink: 0; }
+        .stat-lbl { font-size: 11px; color: var(--muted); }
+        .stat-val { font-size: 22px; font-weight: 600; color: var(--header); line-height: 1.1; }
+
+        /* Panel / Card */
+        .win-panel { background: var(--panel); border: 1px solid var(--border); margin-bottom: 10px; }
+        .win-panel-head { background: var(--toolbar); border-bottom: 1px solid var(--border); padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; }
+        .win-panel-title { font-size: 12px; font-weight: 600; color: var(--header); display: flex; align-items: center; gap: 6px; }
+        .win-panel-body { padding: 0; }
+        .win-panel-body.pad { padding: 12px; }
+
+        /* Table */
+        .win-table { width: 100%; border-collapse: collapse; }
+        .win-table thead tr { background: var(--toolbar); position: sticky; top: 0; z-index: 5; }
+        .win-table th { padding: 4px 10px; text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; cursor: pointer; }
+        .win-table th:hover { background: var(--hover); }
+        .win-table td { padding: 3px 10px; font-size: 12px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f8f8f8; white-space: nowrap; }
+        .win-table tbody tr:hover { background: var(--hover); cursor: default; }
+        .win-table tbody tr:nth-child(even) { background: #fafafa; }
+        .win-table tbody tr:nth-child(even):hover { background: var(--hover); }
+
+        /* Badges */
+        .badge { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; border: 1px solid; }
+        .badge-ok { background: #dff6dd; border-color: #107c10; color: #0b5a0b; }
+        .badge-lock { background: #fde7e9; border-color: #d13438; color: #8b0000; }
+        .badge-dis { background: #fff4ce; border-color: #ca5010; color: #6a2e00; }
+        .badge-ou { background: var(--blue-light); border-color: var(--blue); color: var(--blue-dark); }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; font-size: 12px; font-family: inherit; cursor: pointer; border-radius: 2px; border: 1px solid; text-decoration: none; transition: all 0.1s; white-space: nowrap; }
+        .btn-primary { background: var(--blue); border-color: var(--blue-dark); color: #fff; }
+        .btn-primary:hover { background: var(--blue-dark); }
+        .btn-default { background: var(--panel); border-color: var(--border-dk); color: var(--text); }
+        .btn-default:hover { background: var(--hover); }
+        .btn-danger { background: var(--panel); border-color: #d13438; color: #d13438; }
+        .btn-danger:hover { background: #fde7e9; }
+        .btn-success { background: var(--panel); border-color: #107c10; color: #107c10; }
+        .btn-success:hover { background: #dff6dd; }
+        .btn-sm { padding: 2px 8px; font-size: 11px; }
+
+        /* Forms */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .form-group { margin-bottom: 10px; }
+        .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--header); margin-bottom: 3px; }
+        .form-control { width: 100%; padding: 4px 8px; font-size: 12px; font-family: inherit; border: 1px solid var(--border-dk); border-radius: 2px; background: #fff; color: var(--text); }
+        .form-control:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+        .form-check { display: flex; align-items: center; gap: 6px; }
+        .form-check input[type=checkbox] { width: 14px; height: 14px; }
+        .field-error { color: var(--red); font-size: 11px; margin-top: 2px; display: block; }
+        .val-summary { background: #fde7e9; border: 1px solid #d13438; padding: 8px 10px; margin-bottom: 10px; font-size: 12px; color: #8b0000; border-radius: 2px; }
+
+        /* Dialog Box */
+        .dialog-box { background: var(--panel); border: 1px solid var(--border-dk); box-shadow: 2px 2px 8px rgba(0,0,0,0.2); max-width: 480px; margin: 0 auto; border-radius: 2px; }
+        .dialog-title { background: var(--blue); color: #fff; padding: 7px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .dialog-body { padding: 14px; }
+        .dialog-footer { padding: 8px 14px; background: var(--toolbar); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 4px; }
+
+        /* Policy Info Box */
+        .policy-box { background: #fff4ce; border: 1px solid #ca5010; padding: 8px 10px; margin-bottom: 10px; border-radius: 2px; font-size: 11px; color: #6a2e00; }
+
+        /* Login Result */
+        .result-ok { background: #dff6dd; border: 1px solid #107c10; padding: 12px 14px; border-radius: 2px; }
+        .result-fail { background: #fde7e9; border: 1px solid #d13438; padding: 12px 14px; border-radius: 2px; }
+        .result-lock { background: #fff4ce; border: 1px solid #ca5010; padding: 12px 14px; border-radius: 2px; }
+        .result-dis { background: #f3f2f1; border: 1px solid var(--border-dk); padding: 12px 14px; border-radius: 2px; }
+        .result-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .result-detail { font-size: 12px; margin-bottom: 8px; }
+        .token-grid { display: grid; grid-template-columns: 130px 1fr; gap: 2px 10px; margin-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px; }
+        .token-lbl { font-size: 11px; font-weight: 700; color: var(--muted); padding: 2px 0; }
+        .token-val { font-size: 11px; color: var(--text); padding: 2px 0; }
+
+        /* Search Bar */
+        .search-wrap { display: flex; align-items: center; gap: 6px; }
+        .search-box { display: flex; align-items: center; border: 1px solid var(--border-dk); background: #fff; border-radius: 2px; }
+        .search-box input { border: none; outline: none; font-size: 12px; padding: 3px 6px; width: 180px; background: transparent; font-family: inherit; }
+        .search-box span { padding: 0 6px; color: var(--muted); }
+
+        /* Empty */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+        .empty-ico { font-size: 40px; margin-bottom: 8px; opacity: 0.5; }
+
+        /* Two col layout */
+        .two-col { display: grid; grid-template-columns: 280px 1fr; gap: 10px; }
+        .detail-grid { display: grid; grid-template-columns: 140px 1fr; border-top: 1px solid var(--border); }
+        .detail-lbl { font-size: 11px; font-weight: 700; color: var(--muted); padding: 5px 8px; border-bottom: 1px solid var(--border); background: var(--toolbar); }
+        .detail-val { font-size: 12px; padding: 5px 8px; border-bottom: 1px solid var(--border); }
+
+        /* Flex utils */
+        .d-flex { display: flex; }
+        .align-c { align-items: center; }
+        .gap-2 { gap: 6px; }
+        .gap-3 { gap: 10px; }
+        .mb-2 { margin-bottom: 8px; }
+        .justify-between { justify-content: space-between; }
+        .text-muted { color: var(--muted); }
+        .ml-auto { margin-left: auto; }
+    </style>
+</head>
+<body>
+
+<!-- Title Bar -->
+<div class="titlebar">
+    <span class="titlebar-icon">🖥️</span>
+    <span class="titlebar-text">Active Directory Users and Computers — [company.local]</span>
+    <div class="titlebar-btns">
+        <div class="tb-wbtn">─</div>
+        <div class="tb-wbtn">□</div>
+        <div class="tb-wbtn cls">✕</div>
+    </div>
+</div>
+
+<!-- Menu Bar -->
+<div class="menubar">
+    <span class="mnu">File</span>
+    <span class="mnu">Action</span>
+    <span class="mnu">View</span>
+    <span class="mnu">Help</span>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+    <a href="/" class="tbtn @(ViewContext.RouteData.Values["controller"]?.ToString()=="Home"?"act":"")">🏠 Console Root</a>
+    <div class="tbtn-sep"></div>
+    <a href="/OU" class="tbtn @(ViewContext.RouteData.Values["controller"]?.ToString()=="OU"?"act":"")">🗂️ Org. Units</a>
+    <a href="/Users" class="tbtn @(ViewContext.RouteData.Values["controller"]?.ToString()=="Users"?"act":"")">👥 Users</a>
+    <div class="tbtn-sep"></div>
+    <a href="/Users/Create" class="tbtn">➕ New User</a>
+    <a href="/OU/Create" class="tbtn">📁 New OU</a>
+    <div class="tbtn-sep"></div>
+    <a href="/Auth/LoginSimulator" class="tbtn @(ViewContext.RouteData.Values["controller"]?.ToString()=="Auth"?"act":"")">🔐 Login Simulator</a>
+    <div class="tbtn-sep"></div>
+</div>
+
+<!-- Address Bar -->
+<div class="addrbar">
+    <span class="addrbar-lbl">Location:</span>
+    <input class="addrbar-path" readonly value="company.local / @ViewData["Title"]" />
+</div>
+
+<!-- App Body -->
+<div class="app-body">
+
+    <!-- Left Tree -->
+    <div class="sidebar">
+        <div class="sb-head">Directory Tree</div>
+        <div class="tree">
+            <a href="/" class="titem @(ViewContext.RouteData.Values["controller"]?.ToString()=="Home"?"active":"")">
+                <span class="ti">🌐</span> company.local
+            </a>
+            <div class="tree-sec">Containers</div>
+            <a href="/OU" class="titem titem-sub @(ViewContext.RouteData.Values["controller"]?.ToString()=="OU"?"active":"")">
+                <span class="ti">🗂️</span> Organizational Units
+            </a>
+            <a href="/Users" class="titem titem-sub @(ViewContext.RouteData.Values["controller"]?.ToString()=="Users"?"active":"")">
+                <span class="ti">👥</span> Users
+            </a>
+            <div class="tree-sec">Tools</div>
+            <a href="/Auth/LoginSimulator" class="titem titem-sub @(ViewContext.RouteData.Values["controller"]?.ToString()=="Auth"?"active":"")">
+                <span class="ti">🔐</span> Login Simulator
+            </a>
+            <div class="tree-sec">Policy</div>
+            <div class="titem titem-sub"><span class="ti">🔑</span> Password Policy</div>
+            <div class="titem titem-sub"><span class="ti">🔒</span> Lockout Policy</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="content-inner">
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="notif notif-ok">✅ @TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="notif notif-err">❌ @TempData["Error"]</div>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <div class="notif notif-warn">⚠️ @TempData["Warning"]</div>
+            }
+
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+<!-- Status Bar -->
+<div class="statusbar">
+    <span class="sb-item">🟢 Domain: company.local</span>
+    <span class="sb-item">💾 SQLite — Local</span>
+    <span class="sb-item">🔒 Min Password: 6 chars</span>
+    <span class="sb-item">⚠️ Lockout: 3 attempts</span>
+    <span class="sb-item ml-auto">AD Simulator v1.0</span>
+</div>
+
+</body>
+</html>

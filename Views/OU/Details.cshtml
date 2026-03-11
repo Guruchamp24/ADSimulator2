@@ -1,0 +1,54 @@
+@model ADSimulator.Data.OrganizationalUnit
+@{ ViewData["Title"] = Model.Name + " Properties"; }
+<div class="panel-hdr">
+    <div class="panel-hdr-title"><span class="phi">🗂️</span> @Model.Name — Properties</div>
+    <div class="panel-hdr-actions">
+        <a href="/OU/Edit/@Model.Id" class="btn btn-default btn-sm">✏️ Rename</a>
+        <a href="/OU" class="btn btn-default btn-sm">← Back</a>
+    </div>
+</div>
+<div style="display:grid; grid-template-columns:260px 1fr; height:100%;">
+    <div style="border-right:1px solid #e0e0e0; padding:16px; background:#fafafa;">
+        <div style="text-align:center; padding:12px 0;">
+            <div style="font-size:52px;">🗂️</div>
+            <div style="font-size:14px; font-weight:700; color:#1e3a5f; margin-top:6px;">@Model.Name</div>
+            <div style="font-size:11px; color:#888;">Organizational Unit</div>
+            <span class="badge b-info" style="margin-top:6px;">@Model.Users.Count user(s)</span>
+        </div>
+        <div class="section-title">Properties</div>
+        <table class="prop-table">
+            <tr><td>OU ID</td><td>#@Model.Id</td></tr>
+            <tr><td>Name</td><td>@Model.Name</td></tr>
+            <tr><td>Description</td><td>@(string.IsNullOrEmpty(Model.Description) ? "—" : Model.Description)</td></tr>
+            <tr><td>Created</td><td>@Model.CreatedAt.ToString("dd MMM yyyy")</td></tr>
+            <tr><td>Members</td><td>@Model.Users.Count</td></tr>
+        </table>
+    </div>
+    <div style="padding:12px; overflow-y:auto;">
+        <div class="lv-toolbar">
+            <span style="font-size:11px; font-weight:700; color:#555;">👥 USERS IN THIS OU (@Model.Users.Count)</span>
+            <a href="/Users/Create" class="btn btn-primary btn-sm">➕ New User</a>
+        </div>
+        @if (!Model.Users.Any())
+        {
+            <div class="empty-state"><div class="es-icon">👤</div><p>No users in this OU</p></div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Username</th><th>Full Name</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                @foreach (var u in Model.Users)
+                {
+                    <tr>
+                        <td style="font-weight:600; color:#0078d4;"><a href="/Users/Details/@u.Id" style="color:#0078d4; text-decoration:none;">👤 @u.Username</a></td>
+                        <td>@u.FullName</td>
+                        <td>@if(u.IsLocked){<span class="badge b-lock">🔒 Locked</span>}else if(!u.IsEnabled){<span class="badge b-dis">Disabled</span>}else{<span class="badge b-ok">✅ Active</span>}</td>
+                        <td><a href="/Users/Details/@u.Id" class="btn btn-default btn-sm">Properties</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

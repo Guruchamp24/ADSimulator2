@@ -1,0 +1,94 @@
+@model ADSimulator.Models.LoginSimulatorViewModel
+@{ ViewData["Title"] = "Login Simulator"; }
+
+<div style="max-width:500px; margin:0 auto;">
+
+<div class="win-panel" style="margin-bottom:10px;">
+    <div class="win-panel-head"><span class="win-panel-title">🧪 Test Credentials (Seed Data)</span></div>
+    <div class="win-panel-body">
+        <table class="win-table">
+            <thead><tr><th>Username</th><th>Password</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td style="font-weight:600;color:var(--blue);">admin</td><td>Admin@123</td><td><span class="badge badge-ok">✅ Active</span></td></tr>
+                <tr><td style="font-weight:600;color:var(--blue);">jdoe</td><td>Pass123</td><td><span class="badge badge-ok">✅ Active</span></td></tr>
+                <tr><td style="font-weight:600;color:var(--blue);">locked.user</td><td>any</td><td><span class="badge badge-lock">🔒 Locked</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="dialog-box">
+    <div class="dialog-title" style="background:#1e3a5f;">
+        🔐 Windows Security — Domain Authentication
+    </div>
+    <div class="dialog-body">
+
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; padding:10px; background:var(--bg); border:1px solid var(--border);">
+            <span style="font-size:36px;">🖥️</span>
+            <div>
+                <div style="font-weight:700; font-size:13px;">company.local</div>
+                <div style="color:var(--muted); font-size:11px;">Active Directory Domain Services</div>
+                <div style="color:var(--muted); font-size:11px;">AD Simulator v1.0 — Offline Mode</div>
+            </div>
+        </div>
+
+        <form method="post" asp-action="LoginSimulator">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label class="form-label">👤 User name:</label>
+                <input asp-for="Username" class="form-control" placeholder="domain\username or username" autocomplete="off" />
+                <span asp-validation-for="Username" class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🔑 Password:</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" autocomplete="off" />
+                <span asp-validation-for="Password" class="field-error"></span>
+            </div>
+
+            <div class="dialog-footer" style="margin: 0 -14px; padding: 8px 14px; margin-top:10px;">
+                <button type="submit" class="btn btn-primary">Sign In →</button>
+                <a href="/" class="btn btn-default">Cancel</a>
+            </div>
+        </form>
+
+        @if (Model.ResultMessage != null)
+        {
+            <div style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px;">
+                @{
+                    var cls = Model.ResultType switch {
+                        "success" => "result-ok",
+                        "locked" => "result-lock",
+                        "disabled" => "result-dis",
+                        _ => "result-fail"
+                    };
+                    var icon = Model.ResultType switch {
+                        "success" => "✅",
+                        "locked" => "🔒",
+                        "disabled" => "🚫",
+                        _ => "❌"
+                    };
+                }
+                <div class="@cls">
+                    <div class="result-title">@icon @Model.ResultMessage</div>
+                    <div class="result-detail">@Model.ResultDetail</div>
+
+                    @if (Model.AuthenticatedUser != null)
+                    {
+                        <div class="token-grid">
+                            <div class="token-lbl">Display Name</div><div class="token-val">@Model.AuthenticatedUser.FullName</div>
+                            <div class="token-lbl">SAM Account</div><div class="token-val">@Model.AuthenticatedUser.Username</div>
+                            <div class="token-lbl">Email</div><div class="token-val">@Model.AuthenticatedUser.Email</div>
+                            <div class="token-lbl">Org. Unit</div><div class="token-val">@Model.AuthenticatedUser.OU?.Name</div>
+                            <div class="token-lbl">Logon Time</div><div class="token-val">@Model.AuthenticatedUser.LastLogin?.ToString("MMM dd, yyyy HH:mm:ss")</div>
+                            <div class="token-lbl">Domain</div><div class="token-val">company.local</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+</div>

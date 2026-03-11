@@ -1,0 +1,27 @@
+@model ADSimulator.Models.OUViewModel
+@{ ViewData["Title"] = "Edit OU"; }
+<div class="panel-hdr"><div class="panel-hdr-title"><span class="phi">✏️</span> Rename Organizational Unit</div></div>
+<div style="padding:16px;">
+<div class="win-form">
+    <div class="win-form-title">✏️ OU Properties — @Model.Name</div>
+    <div class="win-form-body">
+        <form method="post" asp-action="Edit">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label class="form-label">OU Name <span>*</span></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="form-error"></span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:12px;">
+                <button type="submit" class="btn btn-primary">💾 Save</button>
+                <a href="/OU" class="btn btn-default">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</div>

@@ -1,0 +1,49 @@
+@model ADSimulator.Data.OrganizationalUnit
+@{ ViewData["Title"] = "OU — " + Model.Name; }
+<div class="d-flex gap-2 mb-2">
+    <a href="/OU" class="btn btn-default btn-sm">← Back</a>
+    <a href="/OU/Edit/@Model.Id" class="btn btn-default btn-sm">✏️ Edit</a>
+    <a href="/Users/Create" class="btn btn-primary btn-sm">+ Add User</a>
+</div>
+<div class="two-col">
+    <div class="win-panel">
+        <div class="dialog-title" style="border-radius:0;">🗂️ OU Properties</div>
+        <div class="detail-grid">
+            <div class="detail-lbl">OU ID</div><div class="detail-val">#@Model.Id</div>
+            <div class="detail-lbl">Name</div><div class="detail-val" style="font-weight:600;">@Model.Name</div>
+            <div class="detail-lbl">Description</div><div class="detail-val">@(string.IsNullOrEmpty(Model.Description) ? "—" : Model.Description)</div>
+            <div class="detail-lbl">Total Users</div><div class="detail-val"><span class="badge badge-ou">@Model.Users.Count</span></div>
+            <div class="detail-lbl">Created</div><div class="detail-val">@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
+        </div>
+    </div>
+    <div class="win-panel">
+        <div class="win-panel-head"><span class="win-panel-title">👥 Users in @Model.Name</span><a href="/Users/Create" class="btn btn-primary btn-sm">+ Add</a></div>
+        <div class="win-panel-body">
+            @if (!Model.Users.Any())
+            {
+                <div class="empty-state"><div class="empty-ico">👤</div><div>No users in this OU</div></div>
+            }
+            else
+            {
+                <table class="win-table">
+                    <thead><tr><th>Username</th><th>Full Name</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    @foreach (var u in Model.Users)
+                    {
+                        <tr>
+                            <td style="font-weight:600;color:var(--blue);">@u.Username</td>
+                            <td>@u.FullName</td>
+                            <td>
+                                @if (u.IsLocked) { <span class="badge badge-lock">🔒 Locked</span> }
+                                else if (!u.IsEnabled) { <span class="badge badge-dis">🚫 Disabled</span> }
+                                else { <span class="badge badge-ok">✅ Active</span> }
+                            </td>
+                            <td><a href="/Users/Details/@u.Id" class="btn btn-default btn-sm">Properties</a></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

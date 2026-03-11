@@ -1,0 +1,24 @@
+@model ADSimulator.Models.OUViewModel
+@{ ViewData["Title"] = "New OU"; }
+<div class="dialog-box">
+    <div class="dialog-title">🗂️ New Object — Organizational Unit</div>
+    <div class="dialog-body">
+        <form method="post" asp-action="Create">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="val-summary"></div>
+            <div class="form-group">
+                <label class="form-label">OU Name *</label>
+                <input asp-for="Name" class="form-control" placeholder="e.g. IT Department" autocomplete="off" />
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Optional description..."></textarea>
+            </div>
+            <div class="dialog-footer" style="margin: 0 -14px -14px; padding: 8px 14px;">
+                <button type="submit" class="btn btn-primary">✅ Create OU</button>
+                <a href="/OU" class="btn btn-default">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

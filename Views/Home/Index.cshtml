@@ -1,0 +1,108 @@
+@model ADSimulator.Models.DashboardViewModel
+@{ ViewData["Title"] = "Dashboard"; }
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+    <div class="stat-box">
+        <div class="stat-ico">🗂️</div>
+        <div><div class="stat-lbl">Org. Units</div><div class="stat-val">@Model.TotalOUs</div></div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-ico">👥</div>
+        <div><div class="stat-lbl">Total Users</div><div class="stat-val">@Model.TotalUsers</div></div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-ico">✅</div>
+        <div><div class="stat-lbl">Active</div><div class="stat-val" style="color:#107c10;">@Model.ActiveUsers</div></div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-ico">🔒</div>
+        <div><div class="stat-lbl">Locked</div><div class="stat-val" style="color:#d13438;">@Model.LockedUsers</div></div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-ico">🚫</div>
+        <div><div class="stat-lbl">Disabled</div><div class="stat-val" style="color:#ca5010;">@Model.DisabledUsers</div></div>
+    </div>
+</div>
+
+<!-- Panel Header -->
+<div class="panel-hdr">
+    <div class="panel-hdr-title"><span class="phi">🖥️</span> Active Directory Users and Computers</div>
+    <div class="panel-hdr-actions">
+        <a href="/Users/Create" class="btn btn-primary btn-sm">➕ New User</a>
+        <a href="/OU/Create" class="btn btn-default btn-sm">📁 New OU</a>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:0; border-top:1px solid #e0e0e0;">
+
+    <!-- OUs Table -->
+    <div style="border-right:1px solid #e0e0e0;">
+        <div class="lv-toolbar">
+            <span style="font-size:11px; font-weight:700; color:#555;">🗂️ ORGANIZATIONAL UNITS</span>
+            <a href="/OU/Create" class="btn btn-default btn-sm">+ New</a>
+        </div>
+        @if (!Model.OUs.Any())
+        {
+            <div class="empty-state"><div class="es-icon">🗂️</div><p>No OUs created yet</p></div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Name</th><th>Users</th><th>Created</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var ou in Model.OUs)
+                {
+                    <tr>
+                        <td><a href="/OU/Details/@ou.Id" style="color:#0078d4; text-decoration:none; font-weight:600;">🗂️ @ou.Name</a></td>
+                        <td><span class="badge b-info">@ou.Users.Count</span></td>
+                        <td style="color:#666;">@ou.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td><a href="/OU/Edit/@ou.Id" class="btn btn-default btn-sm">Edit</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <!-- Recent Users -->
+    <div>
+        <div class="lv-toolbar">
+            <span style="font-size:11px; font-weight:700; color:#555;">👥 RECENT USERS</span>
+            <a href="/Users/Create" class="btn btn-default btn-sm">+ New</a>
+        </div>
+        @if (!Model.RecentUsers.Any())
+        {
+            <div class="empty-state"><div class="es-icon">👤</div><p>No users yet</p></div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Username</th><th>OU</th><th>Status</th></tr></thead>
+                <tbody>
+                @foreach (var u in Model.RecentUsers)
+                {
+                    <tr>
+                        <td><a href="/Users/Details/@u.Id" style="color:#0078d4; text-decoration:none; font-weight:600;">👤 @u.Username</a></td>
+                        <td style="color:#666;">@u.OU?.Name</td>
+                        <td>
+                            @if (u.IsLocked) { <span class="badge b-lock">🔒 Locked</span> }
+                            else if (!u.IsEnabled) { <span class="badge b-dis">🚫 Disabled</span> }
+                            else { <span class="badge b-ok">✅ Active</span> }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<!-- Policy Info -->
+<div style="padding:10px 12px; background:#f8f8f8; border-top:1px solid #e0e0e0; display:flex; gap:16px; flex-shrink:0;">
+    <span style="font-size:11px; color:#555;">📋 <b>Domain Policy:</b></span>
+    <span style="font-size:11px; color:#0078d4;">🔑 Password min length: 6 characters</span>
+    <span style="font-size:11px; color:#d13438;">🔒 Account lockout: 3 failed attempts</span>
+    <span style="font-size:11px; color:#107c10;">💾 Storage: SQLite (offline)</span>
+    <a href="/Auth/LoginSimulator" style="font-size:11px; color:#0078d4; margin-left:auto; text-decoration:none; font-weight:600;">🔐 Open Login Simulator →</a>
+</div>

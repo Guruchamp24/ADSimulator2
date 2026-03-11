@@ -1,0 +1,89 @@
+@model ADSimulator.Models.CreateUserViewModel
+@{ ViewData["Title"] = "New User"; }
+
+<div class="panel-hdr">
+    <div class="panel-hdr-title"><span class="phi">➕</span> New User Object</div>
+</div>
+<div style="padding:16px; overflow-y:auto;">
+<div class="win-form" style="max-width:560px;">
+    <div class="win-form-title">👤 Create New User — Active Directory</div>
+    <div class="win-form-body">
+
+        <div class="policy-box">
+            <b>📋 Domain Password Policy</b>
+            🔑 Minimum password length: 6 characters &nbsp;|&nbsp; 🔒 Lockout after 3 failed attempts
+        </div>
+
+        <form method="post" asp-action="Create" id="createForm">
+            @Html.AntiForgeryToken()
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="val-summary">
+                    ⚠️ Please fix the following errors:
+                    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>• @err.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Username <span>*</span></label>
+                    <input asp-for="Username" class="form-control" placeholder="e.g. jdoe" autocomplete="off" />
+                    <span asp-validation-for="Username" class="form-error"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Full Name <span>*</span></label>
+                    <input asp-for="FullName" class="form-control" placeholder="e.g. John Doe" autocomplete="off" />
+                    <span asp-validation-for="FullName" class="form-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address <span>*</span></label>
+                <input asp-for="Email" class="form-control" placeholder="e.g. jdoe@company.local" autocomplete="off" />
+                <span asp-validation-for="Email" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Organizational Unit <span>*</span></label>
+                <select asp-for="OUId" class="form-control">
+                    <option value="0">-- Select Organizational Unit --</option>
+                    @foreach (var ou in Model.OUs)
+                    {
+                        <option value="@ou.Id">🗂️ @ou.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="OUId" class="form-error"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Password <span>*</span> <span style="color:#888; font-weight:400; font-size:10px;">(min 6 chars)</span></label>
+                    <input asp-for="Password" type="password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Password" class="form-error"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password <span>*</span></label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword" class="form-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input asp-for="IsEnabled" type="checkbox" />
+                    <label class="form-label" style="margin-bottom:0;">Account is Enabled</label>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:6px; margin-top:14px; padding-top:10px; border-top:1px solid #e0e0e0;">
+                <button type="submit" class="btn btn-primary">✅ Create User</button>
+                <a href="/Users" class="btn btn-default">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</div>

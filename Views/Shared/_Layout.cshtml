@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Active Directory Users and Computers</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; background: #f0f0f0; color: #1b1b1b; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Title Bar */
+        .titlebar { height: 30px; background: #1e3a5f; display: flex; align-items: center; padding: 0 10px; gap: 8px; flex-shrink: 0; }
+        .titlebar-icon { font-size: 15px; }
+        .titlebar-text { color: #fff; font-size: 12px; flex: 1; font-weight: 400; }
+        .titlebar-btns { display: flex; }
+        .titlebar-btn { width: 44px; height: 30px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; font-size: 13px; }
+        .titlebar-btn:hover { background: rgba(255,255,255,0.15); }
+        .titlebar-btn.cls:hover { background: #c42b1c; }
+
+        /* Menu Bar */
+        .menubar { height: 22px; background: #f8f8f8; border-bottom: 1px solid #d0d0d0; display: flex; align-items: center; padding: 0 4px; flex-shrink: 0; }
+        .mnu { padding: 2px 8px; font-size: 12px; cursor: pointer; border-radius: 2px; }
+        .mnu:hover { background: #e5e5e5; }
+
+        /* Toolbar */
+        .toolbar { height: 34px; background: #f8f8f8; border-bottom: 1px solid #d0d0d0; display: flex; align-items: center; padding: 0 4px; gap: 1px; flex-shrink: 0; }
+        .tb { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; font-size: 12px; color: #1b1b1b; cursor: pointer; border-radius: 3px; border: 1px solid transparent; background: transparent; text-decoration: none; white-space: nowrap; }
+        .tb:hover { background: #e8e8e8; border-color: #c8c8c8; color: #1b1b1b; }
+        .tb.active-tb { background: #cce4f7; border-color: #0078d4; }
+        .tb-sep { width: 1px; height: 20px; background: #d0d0d0; margin: 0 2px; }
+        .tbi { font-size: 14px; }
+
+        /* Layout */
+        .app-body { display: flex; flex: 1; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar { width: 250px; background: #fff; border-right: 1px solid #d0d0d0; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+        .sidebar-hdr { padding: 5px 8px; background: #f0f0f0; border-bottom: 1px solid #d0d0d0; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tree { overflow-y: auto; flex: 1; padding: 3px 0; }
+        .tree-item { display: flex; align-items: center; gap: 4px; padding: 3px 8px; cursor: pointer; color: #1b1b1b; text-decoration: none; font-size: 12px; user-select: none; }
+        .tree-item:hover { background: #e8f4fd; }
+        .tree-item.active { background: #cce4f7; border-left: 2px solid #0078d4; color: #003e78; font-weight: 600; }
+        .tree-item .ti { font-size: 14px; width: 18px; text-align: center; }
+        .tree-section { padding: 8px 8px 2px; font-size: 10px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.8px; }
+        .tree-indent { padding-left: 22px; }
+
+        /* Right Content */
+        .content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Address Bar */
+        .addrbar { height: 26px; background: #f8f8f8; border-bottom: 1px solid #d0d0d0; display: flex; align-items: center; padding: 0 8px; gap: 6px; flex-shrink: 0; }
+        .addrbar-lbl { font-size: 11px; color: #666; white-space: nowrap; }
+        .addrbar-path { flex: 1; height: 18px; padding: 0 5px; font-size: 11px; border: 1px solid #c0c0c0; background: #fff; border-radius: 1px; outline: none; }
+
+        /* Content */
+        .content-panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: #fff; }
+
+        /* Panel Header */
+        .panel-hdr { background: #f0f4fa; border-bottom: 1px solid #d0d0d0; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .panel-hdr-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #1e3a5f; }
+        .panel-hdr-title .phi { font-size: 18px; }
+        .panel-hdr-actions { display: flex; gap: 4px; }
+
+        /* Notifications */
+        .notifs { padding: 4px 8px; background: #fff; flex-shrink: 0; }
+        .notif { display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 1px solid; font-size: 12px; margin-bottom: 3px; border-radius: 2px; }
+        .notif-s { background: #dff6dd; border-color: #107c10; color: #0b5a0b; }
+        .notif-e { background: #fde7e9; border-color: #d13438; color: #8b0000; }
+        .notif-w { background: #fff4ce; border-color: #ca5010; color: #6a2e00; }
+        .notif-i { background: #deecf9; border-color: #0078d4; color: #003e78; }
+
+        /* Stats Bar */
+        .stats-bar { display: flex; border-bottom: 2px solid #e0e0e0; flex-shrink: 0; }
+        .stat-box { flex: 1; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-right: 1px solid #e8e8e8; background: #fff; }
+        .stat-box:last-child { border-right: none; }
+        .stat-box:hover { background: #f5f9ff; }
+        .stat-ico { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #f0f4fa; border: 1px solid #d0d8e8; border-radius: 3px; }
+        .stat-lbl { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.3px; }
+        .stat-val { font-size: 22px; font-weight: 700; color: #1e3a5f; line-height: 1.1; }
+
+        /* List View */
+        .lv-toolbar { background: #f8f8f8; border-bottom: 1px solid #e0e0e0; padding: 4px 8px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .lv-search { display: flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #c8c8c8; padding: 2px 6px; border-radius: 2px; }
+        .lv-search input { border: none; outline: none; font-size: 12px; width: 180px; font-family: 'Segoe UI', sans-serif; }
+        .lv-count { font-size: 11px; color: #666; }
+        .lv-filter select { font-size: 12px; border: 1px solid #c8c8c8; padding: 2px 4px; border-radius: 2px; outline: none; }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { background: #f0f0f0; position: sticky; top: 0; z-index: 5; }
+        th { padding: 5px 10px; text-align: left; font-size: 11px; font-weight: 700; color: #555; border-bottom: 2px solid #c8c8c8; border-right: 1px solid #e0e0e0; white-space: nowrap; cursor: pointer; user-select: none; }
+        th:hover { background: #e8e8e8; }
+        th:last-child { border-right: none; }
+        td { padding: 4px 10px; font-size: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        tbody tr:hover { background: #e8f4fd; }
+        tbody tr:nth-child(even) { background: #fafafa; }
+        tbody tr:nth-child(even):hover { background: #e8f4fd; }
+
+        /* Status badges */
+        .badge { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 2px; font-size: 11px; font-weight: 600; border: 1px solid; }
+        .b-ok { background: #dff6dd; border-color: #107c10; color: #0b5a0b; }
+        .b-lock { background: #fde7e9; border-color: #d13438; color: #8b0000; }
+        .b-dis { background: #f0f0f0; border-color: #a0a0a0; color: #555; }
+        .b-info { background: #deecf9; border-color: #0078d4; color: #003e78; }
+        .b-warn { background: #fff4ce; border-color: #ca5010; color: #6a2e00; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; font-size: 12px; font-family: 'Segoe UI', sans-serif; cursor: pointer; border-radius: 2px; border: 1px solid; text-decoration: none; white-space: nowrap; }
+        .btn-primary { background: #0078d4; border-color: #005a9e; color: #fff; }
+        .btn-primary:hover { background: #005a9e; color: #fff; }
+        .btn-default { background: #fff; border-color: #c8c8c8; color: #1b1b1b; }
+        .btn-default:hover { background: #e8e8e8; color: #1b1b1b; }
+        .btn-danger { background: #d13438; border-color: #a80000; color: #fff; }
+        .btn-danger:hover { background: #a80000; color: #fff; }
+        .btn-success { background: #107c10; border-color: #0b5a0b; color: #fff; }
+        .btn-success:hover { background: #0b5a0b; color: #fff; }
+        .btn-warn { background: #ca5010; border-color: #a03000; color: #fff; }
+        .btn-warn:hover { background: #a03000; color: #fff; }
+        .btn-sm { padding: 2px 8px; font-size: 11px; }
+
+        /* Forms - Windows Dialog Style */
+        .win-form { max-width: 540px; margin: 12px auto; background: #fff; border: 1px solid #c8c8c8; box-shadow: 2px 2px 8px rgba(0,0,0,0.12); }
+        .win-form-title { background: #1e3a5f; color: #fff; padding: 7px 12px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .win-form-body { padding: 16px; }
+        .win-form-footer { padding: 8px 16px; background: #f0f0f0; border-top: 1px solid #d0d0d0; display: flex; gap: 6px; justify-content: flex-end; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { margin-bottom: 10px; }
+        .form-label { display: block; font-size: 12px; font-weight: 600; color: #333; margin-bottom: 3px; }
+        .form-label span { color: #d13438; }
+        .form-control { width: 100%; padding: 4px 7px; font-size: 12px; font-family: 'Segoe UI', sans-serif; border: 1px solid #c8c8c8; border-radius: 2px; outline: none; background: #fff; }
+        .form-control:focus { border-color: #0078d4; box-shadow: 0 0 0 2px rgba(0,120,212,0.2); }
+        .form-error { color: #d13438; font-size: 11px; margin-top: 2px; display: block; }
+        .val-summary { background: #fde7e9; border: 1px solid #d13438; padding: 8px 12px; margin-bottom: 12px; font-size: 12px; color: #8b0000; border-radius: 2px; }
+        .form-check { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+        .form-check input { width: 14px; height: 14px; }
+        .policy-box { background: #deecf9; border: 1px solid #0078d4; padding: 8px 10px; border-radius: 2px; font-size: 11px; color: #003e78; margin: 10px 0; }
+        .policy-box b { display: block; margin-bottom: 3px; font-size: 12px; }
+
+        /* Detail view */
+        .detail-pane { display: grid; grid-template-columns: 280px 1fr; gap: 0; height: 100%; }
+        .detail-left { border-right: 1px solid #e0e0e0; padding: 16px; background: #fafafa; }
+        .detail-right { padding: 16px; overflow-y: auto; }
+        .detail-avatar { text-align: center; padding: 16px 0 12px; }
+        .detail-avatar .av-icon { font-size: 56px; }
+        .detail-avatar .av-name { font-size: 15px; font-weight: 700; color: #1e3a5f; margin-top: 6px; }
+        .detail-avatar .av-user { font-size: 12px; color: #666; }
+        .prop-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .prop-table tr:hover { background: #f0f4fa; }
+        .prop-table td { padding: 5px 8px; font-size: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+        .prop-table td:first-child { font-weight: 700; color: #555; width: 130px; white-space: nowrap; }
+        .section-title { font-size: 11px; font-weight: 700; color: #0078d4; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #0078d4; padding-bottom: 3px; margin: 12px 0 8px; }
+        .action-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+
+        /* Login Simulator */
+        .login-wrap { max-width: 520px; margin: 20px auto; }
+        .login-panel { background: #fff; border: 1px solid #c8c8c8; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+        .login-hdr { background: #1e3a5f; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+        .login-hdr .lh-icon { font-size: 22px; }
+        .login-hdr .lh-title { font-size: 14px; font-weight: 700; }
+        .login-hdr .lh-sub { font-size: 11px; color: rgba(255,255,255,0.7); }
+        .login-body { padding: 20px; }
+        .login-result { margin-top: 16px; border: 1px solid; padding: 12px 14px; border-radius: 2px; }
+        .lr-success { background: #dff6dd; border-color: #107c10; }
+        .lr-error { background: #fde7e9; border-color: #d13438; }
+        .lr-locked { background: #fff4ce; border-color: #ca5010; }
+        .lr-disabled { background: #f0f0f0; border-color: #a0a0a0; }
+        .lr-icon { font-size: 24px; float: left; margin-right: 12px; }
+        .lr-title { font-size: 13px; font-weight: 700; }
+        .lr-msg { font-size: 12px; margin-top: 3px; color: #333; }
+        .lr-token { margin-top: 12px; background: #f8f8f8; border: 1px solid #d0d0d0; padding: 10px; clear: both; }
+        .lr-token-title { font-size: 10px; font-weight: 700; color: #666; text-transform: uppercase; margin-bottom: 8px; }
+        .lr-token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .lr-token-item { background: #fff; border: 1px solid #e0e0e0; padding: 5px 8px; }
+        .lr-token-item .tk-lbl { font-size: 10px; color: #888; text-transform: uppercase; }
+        .lr-token-item .tk-val { font-size: 12px; font-weight: 600; color: #1b1b1b; }
+        .cred-hint { background: #deecf9; border: 1px solid #0078d4; padding: 8px 10px; margin-bottom: 14px; border-radius: 2px; font-size: 11px; }
+        .cred-hint b { display: block; color: #003e78; margin-bottom: 4px; font-size: 12px; }
+        .cred-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .cred-tag { background: #fff; border: 1px solid #0078d4; padding: 2px 8px; border-radius: 2px; font-size: 11px; color: #003e78; }
+
+        /* Status bar */
+        .statusbar { height: 22px; background: #0078d4; display: flex; align-items: center; padding: 0 10px; gap: 16px; flex-shrink: 0; }
+        .sb-item { color: rgba(255,255,255,0.9); font-size: 11px; display: flex; align-items: center; gap: 4px; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f0f0f0; }
+        ::-webkit-scrollbar-thumb { background: #c0c0c0; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 40px 20px; color: #888; }
+        .empty-state .es-icon { font-size: 48px; margin-bottom: 10px; opacity: 0.5; }
+        .empty-state p { font-size: 13px; }
+        .d-flex { display: flex; } .gap-1 { gap: 4px; } .gap-2 { gap: 8px; }
+        .align-center { align-items: center; } .justify-between { justify-content: space-between; }
+        .mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; } .mt-2 { margin-top: 8px; }
+        .w100 { width: 100%; justify-content: center; }
+    </style>
+</head>
+<body>
+
+<!-- Title Bar -->
+<div class="titlebar">
+    <span class="titlebar-icon">🖥️</span>
+    <span class="titlebar-text">Active Directory Users and Computers — @ViewData["Title"]</span>
+    <div class="titlebar-btns">
+        <div class="titlebar-btn">─</div>
+        <div class="titlebar-btn">□</div>
+        <div class="titlebar-btn cls">✕</div>
+    </div>
+</div>
+
+<!-- Menu Bar -->
+<div class="menubar">
+    <div class="mnu">File</div>
+    <div class="mnu">Action</div>
+    <div class="mnu">View</div>
+    <div class="mnu">Help</div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+    <a href="/" class="tb @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active-tb" : "")">
+        <span class="tbi">🏠</span> Console Root
+    </a>
+    <span class="tb-sep"></span>
+    <a href="/OU" class="tb @(ViewContext.RouteData.Values["controller"]?.ToString() == "OU" ? "active-tb" : "")">
+        <span class="tbi">🗂️</span> Org. Units
+    </a>
+    <a href="/Users" class="tb @(ViewContext.RouteData.Values["controller"]?.ToString() == "Users" ? "active-tb" : "")">
+        <span class="tbi">👥</span> Users
+    </a>
+    <span class="tb-sep"></span>
+    <a href="/Auth/LoginSimulator" class="tb @(ViewContext.RouteData.Values["controller"]?.ToString() == "Auth" ? "active-tb" : "")">
+        <span class="tbi">🔐</span> Login Simulator
+    </a>
+    <span class="tb-sep"></span>
+    <a href="/Users/Create" class="tb"><span class="tbi">➕</span> New User</a>
+    <a href="/OU/Create" class="tb"><span class="tbi">📁</span> New OU</a>
+</div>
+
+<!-- App Body -->
+<div class="app-body">
+
+    <!-- Sidebar Tree -->
+    <div class="sidebar">
+        <div class="sidebar-hdr">📂 Directory Tree</div>
+        <div class="tree">
+            <div class="tree-section">Console Root</div>
+            <a href="/" class="tree-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                <span class="ti">🖥️</span> AD Users & Computers
+            </a>
+
+            <div class="tree-section">Containers</div>
+            <a href="/OU" class="tree-item tree-indent @(ViewContext.RouteData.Values["controller"]?.ToString() == "OU" ? "active" : "")">
+                <span class="ti">🗂️</span> Organizational Units
+            </a>
+            <a href="/Users" class="tree-item tree-indent @(ViewContext.RouteData.Values["controller"]?.ToString() == "Users" ? "active" : "")">
+                <span class="ti">👥</span> Users
+            </a>
+
+            <div class="tree-section">Tools</div>
+            <a href="/Auth/LoginSimulator" class="tree-item tree-indent @(ViewContext.RouteData.Values["controller"]?.ToString() == "Auth" ? "active" : "")">
+                <span class="ti">🔐</span> Login Simulator
+            </a>
+
+            <div class="tree-section">Policy</div>
+            <div class="tree-item tree-indent" style="cursor:default; opacity:0.7;">
+                <span class="ti">🔑</span> Min Password: 6 chars
+            </div>
+            <div class="tree-item tree-indent" style="cursor:default; opacity:0.7;">
+                <span class="ti">🔒</span> Lockout: 3 attempts
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-area">
+        <!-- Address Bar -->
+        <div class="addrbar">
+            <span class="addrbar-lbl">Location:</span>
+            <input class="addrbar-path" readonly value="AD Simulator \ @ViewData["Title"]" />
+        </div>
+
+        <!-- Content Panel -->
+        <div class="content-panel">
+            @if (TempData["Success"] != null)
+            {
+                <div class="notifs"><div class="notif notif-s">✅ @TempData["Success"]</div></div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="notifs"><div class="notif notif-e">❌ @TempData["Error"]</div></div>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <div class="notifs"><div class="notif notif-w">⚠️ @TempData["Warning"]</div></div>
+            }
+            @RenderBody()
+        </div>
+
+        <!-- Status Bar -->
+        <div class="statusbar">
+            <span class="sb-item">🟢 Running</span>
+            <span class="sb-item">💾 SQLite</span>
+            <span class="sb-item">📴 Offline Mode</span>
+            <span class="sb-item" style="margin-left:auto;">AD Simulator v1.0</span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+@model List<ADSimulator.Data.OrganizationalUnit>
+@{ ViewData["Title"] = "Organizational Units"; }
+
+<div class="panel-hdr">
+    <div class="panel-hdr-title"><span class="phi">🗂️</span> Organizational Units (@Model.Count)</div>
+    <div class="panel-hdr-actions">
+        <a href="/OU/Create" class="btn btn-primary btn-sm">➕ New OU</a>
+    </div>
+</div>
+
+<div class="lv-toolbar">
+    <span class="lv-count">@Model.Count object(s)</span>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state"><div class="es-icon">🗂️</div><p>No Organizational Units found. Create one to get started.</p></div>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Users</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var ou in Model)
+        {
+            <tr>
+                <td><a href="/OU/Details/@ou.Id" style="color:#0078d4; text-decoration:none; font-weight:600;">🗂️ @ou.Name</a></td>
+                <td style="color:#555;">@(string.IsNullOrEmpty(ou.Description) ? "—" : ou.Description)</td>
+                <td><a href="/Users?ouId=@ou.Id" style="text-decoration:none;"><span class="badge b-info">@ou.Users.Count user(s)</span></a></td>
+                <td style="color:#666;">@ou.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <a href="/OU/Details/@ou.Id" class="btn btn-default btn-sm">Properties</a>
+                        <a href="/OU/Edit/@ou.Id" class="btn btn-default btn-sm">Rename</a>
+                        <form method="post" action="/OU/Delete/@ou.Id" style="display:inline;" onsubmit="return confirm('Delete OU \'@ou.Name\'? All users will also be deleted.')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

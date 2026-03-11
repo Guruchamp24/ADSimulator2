@@ -1,0 +1,95 @@
+@model ADSimulator.Data.ADUser
+@{ ViewData["Title"] = "User Properties — " + Model.Username; }
+
+<div class="d-flex gap-2 mb-2">
+    <a href="/Users" class="btn btn-default btn-sm">← Back</a>
+    <a href="/Users/Edit/@Model.Id" class="btn btn-default btn-sm">✏️ Edit</a>
+    @if (Model.IsLocked)
+    {
+        <form method="post" action="/Users/Unlock/@Model.Id" style="display:inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success btn-sm">🔓 Unlock Account</button>
+        </form>
+    }
+    <form method="post" action="/Users/ToggleEnabled/@Model.Id" style="display:inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn @(Model.IsEnabled ? "btn-danger" : "btn-success") btn-sm">
+            @(Model.IsEnabled ? "🚫 Disable" : "✅ Enable")
+        </button>
+    </form>
+    <form method="post" action="/Users/Delete/@Model.Id" onsubmit="return confirm('Delete @Model.Username?')" style="display:inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+    </form>
+</div>
+
+<div class="two-col">
+
+    <div>
+        <div class="win-panel">
+            <div class="dialog-title" style="border-radius:0;">
+                @if (Model.IsLocked) { <text>🔒</text> }
+                else if (!Model.IsEnabled) { <text>🚫</text> }
+                else { <text>👤</text> }
+                User Properties
+            </div>
+            <div style="padding:12px; text-align:center; border-bottom:1px solid var(--border);">
+                <div style="font-size:48px; margin-bottom:6px;">
+                    @if (Model.IsLocked) { <text>🔒</text> }
+                    else if (!Model.IsEnabled) { <text>🚫</text> }
+                    else { <text>👤</text> }
+                </div>
+                <div style="font-size:14px; font-weight:700;">@Model.Username</div>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:8px;">@Model.FullName</div>
+                @if (Model.IsLocked) { <span class="badge badge-lock">🔒 Locked Out</span> }
+                else if (!Model.IsEnabled) { <span class="badge badge-dis">🚫 Disabled</span> }
+                else { <span class="badge badge-ok">✅ Active</span> }
+            </div>
+            <div class="detail-grid">
+                <div class="detail-lbl">User ID</div><div class="detail-val">#@Model.Id</div>
+                <div class="detail-lbl">Username</div><div class="detail-val" style="font-weight:600;">@Model.Username</div>
+                <div class="detail-lbl">Full Name</div><div class="detail-val">@Model.FullName</div>
+                <div class="detail-lbl">Email</div><div class="detail-val">@Model.Email</div>
+                <div class="detail-lbl">Org. Unit</div><div class="detail-val"><a href="/OU/Details/@Model.OUId" style="color:var(--blue);text-decoration:none;">@Model.OU?.Name</a></div>
+                <div class="detail-lbl">Created</div><div class="detail-val">@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
+                <div class="detail-lbl">Last Logon</div><div class="detail-val">@(Model.LastLogin.HasValue ? Model.LastLogin.Value.ToString("MMM dd, yyyy HH:mm") : "Never")</div>
+            </div>
+        </div>
+
+        <div class="win-panel">
+            <div class="win-panel-head"><span class="win-panel-title">🔒 Account Security</span></div>
+            <div class="detail-grid">
+                <div class="detail-lbl">Failed Logons</div>
+                <div class="detail-val">
+                    <span style="color:@(Model.FailedLoginAttempts>=3?"var(--red)":Model.FailedLoginAttempts>0?"var(--orange)":"var(--green)"); font-weight:600;">
+                        @Model.FailedLoginAttempts / 3
+                    </span>
+                </div>
+                <div class="detail-lbl">Locked Out</div><div class="detail-val">@(Model.IsLocked ? "🔒 Yes" : "✅ No")</div>
+                <div class="detail-lbl">Account Enabled</div><div class="detail-val">@(Model.IsEnabled ? "✅ Yes" : "🚫 No")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="win-panel">
+        <div class="dialog-title" style="border-radius:0;">🔑 Reset Password</div>
+        <div style="padding:14px;">
+            <div class="policy-box">🔒 Minimum 6 characters required</div>
+            <form method="post" action="/Users/ResetPassword/@Model.Id">
+                @Html.AntiForgeryToken()
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" name="newPassword" class="form-control" placeholder="Enter new password" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" name="confirmPassword" class="form-control" placeholder="Confirm new password" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">🔑 Reset Password</button>
+            </form>
+        </div>
+    </div>
+
+</div>

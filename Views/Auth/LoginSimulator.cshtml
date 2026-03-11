@@ -1,0 +1,121 @@
+@model ADSimulator.Models.LoginSimulatorViewModel
+@{ ViewData["Title"] = "Login Simulator"; }
+
+<div class="panel-hdr">
+    <div class="panel-hdr-title"><span class="phi">🔐</span> AD Login Simulator — Test Authentication</div>
+</div>
+
+<div style="padding:16px; overflow-y:auto;">
+<div class="login-wrap">
+
+    <!-- Credential Hints -->
+    <div class="cred-hint">
+        <b>🧪 Test Credentials (Pre-loaded)</b>
+        <div class="cred-row">
+            <span class="cred-tag">✅ admin / Admin@123</span>
+            <span class="cred-tag">✅ jdoe / Pass123</span>
+            <span class="cred-tag">🔒 locked.user (pre-locked)</span>
+        </div>
+    </div>
+
+    <div class="login-panel">
+        <div class="login-hdr">
+            <span class="lh-icon">🔐</span>
+            <div>
+                <div class="lh-title">Windows Security — Network Authentication</div>
+                <div class="lh-sub">Enter your credentials to authenticate against Active Directory</div>
+            </div>
+        </div>
+        <div class="login-body">
+            <form method="post" asp-action="LoginSimulator">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label class="form-label">👤 Username</label>
+                    <input asp-for="Username" class="form-control" placeholder="domain\username or username" autocomplete="off" />
+                    <span asp-validation-for="Username" class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🔑 Password</label>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" autocomplete="off" />
+                    <span asp-validation-for="Password" class="form-error"></span>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <button type="submit" class="btn btn-primary" style="flex:1; justify-content:center;">🔐 Authenticate</button>
+                    <a href="/Auth/LoginSimulator" class="btn btn-default">↺ Reset</a>
+                </div>
+            </form>
+
+            <!-- Result Box -->
+            @if (Model.HasResult)
+            {
+                <div class="login-result @(Model.ResultType == "success" ? "lr-success" : Model.ResultType == "locked" ? "lr-locked" : Model.ResultType == "disabled" ? "lr-disabled" : "lr-error")">
+                    <div class="lr-icon">
+                        @if (Model.ResultType == "success") { <text>✅</text> }
+                        else if (Model.ResultType == "locked") { <text>🔒</text> }
+                        else if (Model.ResultType == "disabled") { <text>🚫</text> }
+                        else { <text>❌</text> }
+                    </div>
+                    <div class="lr-title">@Model.ResultMessage</div>
+                    <div class="lr-msg">@Model.ResultDetail</div>
+
+                    @if (Model.AuthenticatedUser != null)
+                    {
+                        <div class="lr-token">
+                            <div class="lr-token-title">🎫 Authentication Token — User Session Info</div>
+                            <div class="lr-token-grid">
+                                <div class="lr-token-item">
+                                    <div class="tk-lbl">sAMAccountName</div>
+                                    <div class="tk-val">@Model.AuthenticatedUser.Username</div>
+                                </div>
+                                <div class="lr-token-item">
+                                    <div class="tk-lbl">Display Name</div>
+                                    <div class="tk-val">@Model.AuthenticatedUser.FullName</div>
+                                </div>
+                                <div class="lr-token-item">
+                                    <div class="tk-lbl">Email</div>
+                                    <div class="tk-val">@Model.AuthenticatedUser.Email</div>
+                                </div>
+                                <div class="lr-token-item">
+                                    <div class="tk-lbl">Org. Unit (OU)</div>
+                                    <div class="tk-val">@Model.AuthenticatedUser.OU?.Name</div>
+                                </div>
+                                <div class="lr-token-item">
+                                    <div class="tk-lbl">Last Logon</div>
+                                    <div class="tk-val">@(Model.AuthenticatedUser.LastLogin?.ToString("dd MMM yyyy HH:mm"))</div>
+                                </div>
+                                <div class="lr-token-item">
+                                    <div class="tk-lbl">Account Status</div>
+                                    <div class="tk-val" style="color:#107c10;">✅ Authenticated</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Policy Info -->
+    <div style="margin-top:12px; background:#f8f8f8; border:1px solid #e0e0e0; padding:10px 12px;">
+        <div style="font-size:11px; font-weight:700; color:#555; margin-bottom:6px;">📋 DOMAIN SECURITY POLICY</div>
+        <table style="width:100%; font-size:11px; border-collapse:collapse;">
+            <tr>
+                <td style="padding:3px 8px; color:#333;">🔑 Minimum Password Length</td>
+                <td style="padding:3px 8px; font-weight:600; color:#1e3a5f;">6 characters</td>
+                <td style="padding:3px 8px; color:#333;">🔒 Account Lockout Threshold</td>
+                <td style="padding:3px 8px; font-weight:600; color:#d13438;">3 failed attempts</td>
+            </tr>
+            <tr>
+                <td style="padding:3px 8px; color:#333;">🔓 Lockout Duration</td>
+                <td style="padding:3px 8px; font-weight:600; color:#1e3a5f;">Until admin unlocks</td>
+                <td style="padding:3px 8px; color:#333;">💾 Storage</td>
+                <td style="padding:3px 8px; font-weight:600; color:#107c10;">SQLite (Offline)</td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+</div>

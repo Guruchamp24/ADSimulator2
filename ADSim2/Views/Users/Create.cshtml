@@ -1,0 +1,75 @@
+@model ADSimulator.Models.CreateUserViewModel
+@{ ViewData["Title"] = "New User"; }
+
+<div class="dialog-box">
+    <div class="dialog-title">👤 New Object — User</div>
+    <div class="dialog-body">
+
+        <div class="policy-box">
+            ⚠️ <strong>Password Policy:</strong> Minimum 6 characters required &nbsp;|&nbsp;
+            <strong>Lockout Policy:</strong> Account locks after 3 failed login attempts
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="val-summary"></div>
+
+        <form method="post" asp-action="Create" id="createForm">
+            @Html.AntiForgeryToken()
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">First / Full Name *</label>
+                    <input asp-for="FullName" class="form-control" placeholder="e.g. John Doe" autocomplete="off" />
+                    <span asp-validation-for="FullName" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">User Logon Name (Username) *</label>
+                    <input asp-for="Username" class="form-control" placeholder="e.g. jdoe" autocomplete="off" />
+                    <span asp-validation-for="Username" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input asp-for="Email" class="form-control" placeholder="e.g. jdoe@company.local" autocomplete="off" />
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Organizational Unit *</label>
+                <select asp-for="OUId" class="form-control">
+                    <option value="0">-- Select Organizational Unit --</option>
+                    @foreach (var ou in Model.OUs)
+                    {
+                        <option value="@ou.Id">🗂️ @ou.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="OUId" class="field-error"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Password * <span style="font-weight:400;color:var(--muted)">(min 6 chars)</span></label>
+                    <input asp-for="Password" type="password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Password" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password *</label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input asp-for="IsEnabled" type="checkbox" />
+                    <label class="form-label" style="margin-bottom:0; font-weight:400;">Account is enabled</label>
+                </div>
+            </div>
+
+            <div class="dialog-footer" style="margin: 0 -14px -14px; padding: 8px 14px;">
+                <button type="submit" class="btn btn-primary">✅ Create User</button>
+                <a href="/Users" class="btn btn-default">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
